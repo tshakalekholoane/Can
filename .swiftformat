@@ -1,0 +1,8 @@
+--acronyms true
+--indent 2
+--binarygrouping 4
+--decimalgrouping 3
+--hexliteralcase "lowercase"
+--swiftversion 5.7.1
+--enable acronyms
+--enable sortedSwitchCases
