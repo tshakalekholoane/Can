@@ -1,6 +1,15 @@
 enum ParsingError: Error {
   case invalidFilename(String)
   case missingArguments
+
+  var localizedDescription: String {
+    switch self {
+    case let .invalidFilename(filename):
+      return "Invalid filename encountered: \(filename)"
+    case .missingArguments:
+      return "No arguments provided"
+    }
+  }
 }
 
 /// A utility for parsing command-line options.

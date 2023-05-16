@@ -2,22 +2,14 @@ import Foundation
 
 @main
 public enum Can {
-  private static func trash(_ files: [String]) {
-    files.forEach { file in
-      guard let url = URL(string: file) else {
-        eprint("Invalid file path: \(file).")
-        exit(1)
-      }
-
-      switch Trash.file(at: url) {
-      case .success:
-        print("Moved \(url.lastPathComponent) to Trash.")
-      case .failure(TrashError.fileNotFound):
-        eprint("File not found: \(url.lastPathComponent).")
-        exit(1)
+  private static func trash(_ filenames: [String]) {
+    filenames.forEach { filename in
+      let fileManager = FileManager.default
+      let url = URL(fileURLWithPath: filename)
+      switch Result(catching: { try fileManager.trashItem(at: url, resultingItemURL: nil) }) {
+      case .success: break
       case let .failure(error):
-        eprint("Failed to move \(url.lastPathComponent) to Trash: \(error.localizedDescription).")
-        exit(1)
+        eprint(error.localizedDescription)
       }
     }
   }
@@ -29,10 +21,9 @@ public enum Can {
     case let .failure(error):
       switch error {
       case .missingArguments:
-        eprint("Usage:\tcan file ...")
-        exit(1)
-      case let .invalidFilename(invalidFilename):
-        eprint("Invalid filename encountered: \(invalidFilename). \"/\", \".\", and \"..\" may not be removed.")
+        print("Usage:\tcan file ...")
+      case .invalidFilename:
+        eprint("\(error.localizedDescription). \"/\", \".\", and \"..\" may not be removed.")
         exit(1)
       }
     }
