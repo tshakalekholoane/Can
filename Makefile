@@ -1,17 +1,35 @@
-## help: print this help message
-.PHONY: help
-help:
-	@echo 'Usage:'
-	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' | sed -e 's/^/ /'
+# XXX: GCC distributed with Homebrew does not appear to support
+# compiling to aarch64.
+CC := clang
 
-## clean: delete build artefacts
-.PHONY: clean
+CFLAGS := -framework Foundation -Wall -Wextra -pedantic -O3
+ARCH_FLAGS := -arch
+
+SRC := src/main.c
+
+OUT := bin/can
+
+# Architecture-specific output binaries.
+OUT_AMD64 := bin/can_amd64
+OUT_AARCH64 := bin/can_aarch64
+
+# Combine amd64 and aarch64 binaries.
+UNIVERSAL_BIN := bin/can
+
+.PHONY: all clean
+
+all: $(UNIVERSAL_BIN)
+
+$(UNIVERSAL_BIN): $(OUT_AMD64) $(OUT_AARCH64)
+	lipo -create -output $(UNIVERSAL_BIN) $(OUT_AMD64) $(OUT_AARCH64)
+
+$(OUT_AMD64): $(SRC)
+	mkdir -p $(dir $(OUT_AMD64))
+	$(CC) $(CFLAGS) $(ARCH_FLAGS) x86_64 -o $(OUT_AMD64) $(SRC)
+
+$(OUT_AARCH64): $(SRC)
+	mkdir -p $(dir $(OUT_AARCH64))
+	$(CC) $(CFLAGS) $(ARCH_FLAGS) arm64 -o $(OUT_AARCH64) $(SRC)
+
 clean:
-	-rm -rf .build/ can
-
-## release: compiles a multiarchitecture binary for amd64 and arm64
-.PHONY: release
-release:
-	swift build --configuration release --triple arm64-apple-macosx
-	swift build --configuration release --triple x86_64-apple-macosx
-	lipo -create -output can .build/arm64-apple-macosx/release/can .build/x86_64-apple-macosx/release/can
+	rm -f $(OUT_AMD64) $(OUT_AARCH64) $(UNIVERSAL_BIN)
