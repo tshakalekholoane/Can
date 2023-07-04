@@ -18,6 +18,6 @@ make
 Alternatively, using run the following commands using [Homebrew](https://brew.sh).
 
 ```shell
-brew tap tshakalekholoane/can
+brew tap tshakalekholoane/taps
 brew install can
 ```
